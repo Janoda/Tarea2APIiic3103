@@ -1,0 +1,154 @@
+import {inject} from '@loopback/context';
+import {
+  Count,
+  CountSchema,
+  Filter,
+  repository,
+  Where
+} from '@loopback/repository';
+import {
+  del,
+  get,
+  getModelSchemaRef,
+  getWhereSchemaFor,
+  param,
+  patch,
+  post,
+
+
+
+  Request, requestBody,
+  response,
+  Response,
+
+  RestBindings
+} from '@loopback/rest';
+import {
+  Album, Artist
+} from '../models';
+import {AlbumRepository, ArtistRepository} from '../repositories';
+
+export class ArtistAlbumController {
+  constructor(
+    @repository(ArtistRepository) protected artistRepository: ArtistRepository,
+    @repository(AlbumRepository) protected albumRepository: AlbumRepository,
+    @inject(RestBindings.Http.RESPONSE) public res: Response,
+    @inject(RestBindings.Http.REQUEST) public request: Request,
+  ) { }
+
+  @get('/artists/{id}/albums', {
+    responses: {
+      '200': {
+        description: 'Array of Artist has many Album',
+        content: {
+          'application/json': {
+            schema: {type: 'array', items: getModelSchemaRef(Album)},
+          },
+        },
+      },
+    },
+  })
+  async find(
+    @param.path.string('id') id: string,
+    @param.query.object('filter') filter?: Filter<Album>,
+  ): Promise<Album[]> {
+    return this.artistRepository.albums(id).find(filter);
+  }
+
+  @post('/artists/{id}/albums')
+  @response(201, {
+    description: 'Album creado',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  @response(400, {
+    description: 'Input Invalido',
+  })
+  @response(409, {
+    description: 'Album ya existe',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  @response(422, {
+    description: 'Artista no existe',
+  })
+  async create(
+    @param.path.string('id') id: typeof Artist.prototype.ID,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Album, {
+            title: 'NewAlbumInArtist',
+            exclude: ['ID'],
+            optional: ['artistId']
+          }),
+        },
+      },
+    }) album: Album,
+  ): Promise<object> {
+    album.ID = Buffer.from(album.name.substring(0, 22)).toString('base64')
+    if (await this.albumRepository.exists(album.ID)) {
+      const album2 = await this.albumRepository.findById(album.ID)
+      this.res.status(409)
+      return ({
+        id: album2.ID,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        artist_id: album2.artistId,
+        name: album2.name,
+        genre: album2.genre,
+        artist: this.request.get('host') + "/artists/" + id,
+        tracks: this.request.get('host') + "/albums/" + album2.ID + "/tracks",
+        self: this.request.get('host') + "/albums/" + album2.ID,
+
+      })
+    }
+    await this.artistRepository.albums(id).create(album);
+    return ({
+      id: album.ID,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      artist_id: album.artistId,
+      name: album.name,
+      genre: album.genre,
+      artist: this.request.get('host') + "/artists/" + id,
+      tracks: this.request.get('host') + "/albums/" + album.ID + "/tracks",
+      self: this.request.get('host') + "/albums/" + album.ID,
+
+    })
+  }
+
+  @patch('/artists/{id}/albums', {
+    responses: {
+      '200': {
+        description: 'Artist.Album PATCH success count',
+        content: {'application/json': {schema: CountSchema}},
+      },
+    },
+  })
+  async patch(
+    @param.path.string('id') id: string,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(Album, {partial: true}),
+        },
+      },
+    })
+    album: Partial<Album>,
+    @param.query.object('where', getWhereSchemaFor(Album)) where?: Where<Album>,
+  ): Promise<Count> {
+    return this.artistRepository.albums(id).patch(album, where);
+  }
+
+  @del('/artists/{id}/albums', {
+    responses: {
+      '200': {
+        description: 'Artist.Album DELETE success count',
+        content: {'application/json': {schema: CountSchema}},
+      },
+    },
+  })
+  async delete(
+    @param.path.string('id') id: string,
+    @param.query.object('where', getWhereSchemaFor(Album)) where?: Where<Album>,
+  ): Promise<Count> {
+    return this.artistRepository.albums(id).delete(where);
+  }
+}
