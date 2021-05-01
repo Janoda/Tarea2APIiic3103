@@ -77,7 +77,7 @@ export class ArtistAlbumController {
         'application/json': {
           schema: getModelSchemaRef(Album, {
             title: 'NewAlbumInArtist',
-            exclude: ['ID'],
+            exclude: ['ID', "artistId"],
             optional: ['artistId']
           }),
         },
@@ -85,6 +85,11 @@ export class ArtistAlbumController {
     }) album: Album,
   ): Promise<object> {
     album.ID = Buffer.from(album.name.substring(0, 22)).toString('base64')
+    if (!await this.artistRepository.exists(id)) {
+      console.log("ENTRE")
+      this.res.status(422)
+      return {error: "Artista no existe"}
+    }
     if (await this.albumRepository.exists(album.ID)) {
       const album2 = await this.albumRepository.findById(album.ID)
       this.res.status(409)
@@ -101,6 +106,7 @@ export class ArtistAlbumController {
       })
     }
     await this.artistRepository.albums(id).create(album);
+    this.res.status(201)
     return ({
       id: album.ID,
       // eslint-disable-next-line @typescript-eslint/naming-convention

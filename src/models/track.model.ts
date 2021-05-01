@@ -20,6 +20,9 @@ export class Track extends Entity {
   @property({
     type: 'number',
     required: true,
+    postgresql: {
+      dataType: 'float',
+    },
   })
   duration: number;
 
@@ -29,23 +32,13 @@ export class Track extends Entity {
   })
   timesPlayed?: number;
 
-  @property({
-    type: 'string',
-  })
-  artist?: string;
-
-  @property({
-    type: 'string',
-  })
-  album?: string;
-
 
 
   @belongsTo(() => Album)
   albumId: string;
 
   @belongsTo(() => Album)
-  artistID: string;
+  artistId: string;
 
   constructor(data?: Partial<Track>) {
     super(data);

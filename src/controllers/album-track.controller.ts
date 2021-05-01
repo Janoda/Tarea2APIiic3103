@@ -1,9 +1,10 @@
+import {inject} from '@loopback/context';
 import {
   Count,
   CountSchema,
   Filter,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
   del,
@@ -13,17 +14,26 @@ import {
   param,
   patch,
   post,
-  requestBody,
+
+
+  Request, requestBody, response, Response,
+
+
+
+  RestBindings
 } from '@loopback/rest';
 import {
   Album,
-  Track,
+  Track
 } from '../models';
-import {AlbumRepository} from '../repositories';
+import {AlbumRepository, TrackRepository} from '../repositories';
 
 export class AlbumTrackController {
   constructor(
     @repository(AlbumRepository) protected albumRepository: AlbumRepository,
+    @repository(TrackRepository) protected trackRepository: TrackRepository,
+    @inject(RestBindings.Http.RESPONSE) public res: Response,
+    @inject(RestBindings.Http.REQUEST) public request: Request,
   ) { }
 
   @get('/albums/{id}/tracks', {
@@ -45,13 +55,20 @@ export class AlbumTrackController {
     return this.albumRepository.tracks(id).find(filter);
   }
 
-  @post('/albums/{id}/tracks', {
-    responses: {
-      '200': {
-        description: 'Album model instance',
-        content: {'application/json': {schema: getModelSchemaRef(Track)}},
-      },
-    },
+  @post('/albums/{id}/tracks')
+  @response(201, {
+    description: 'Track creado',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  @response(400, {
+    description: 'Input Invalido',
+  })
+  @response(409, {
+    description: 'Track ya existe',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  @response(422, {
+    description: 'Album no existe',
   })
   async create(
     @param.path.string('id') id: typeof Album.prototype.ID,
@@ -60,15 +77,58 @@ export class AlbumTrackController {
         'application/json': {
           schema: getModelSchemaRef(Track, {
             title: 'NewTrackInAlbum',
-            exclude: ['ID'],
-            optional: ['albumId']
+            exclude: ['ID', 'timesPlayed', 'albumId', 'artistId'],
+            optional: ['albumId', 'artistId']
           }),
         },
       },
-    }) track: Omit<Track, 'ID'>,
-  ): Promise<Track> {
-    return this.albumRepository.tracks(id).create(track);
+    }) track: Track,
+  ): Promise<object> {
+    track.ID = Buffer.from(track.name.substring(0, 22)).toString('base64')
+    if (!await this.albumRepository.exists(id)) {
+      console.log("ENTRE")
+      this.res.status(422)
+      return {error: "Album no existe"}
+    }
+    if (await this.trackRepository.exists(track.ID)) {
+      console.log("WHYYY")
+      const track2 = await this.trackRepository.findById(track.ID)
+      this.res.status(409)
+      return ({
+        id: track2.ID,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        album_id: track2.albumId,
+        name: track2.name,
+        duration: track2.duration,
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        times_played: track2.timesPlayed,
+        artist: this.request.get('host') + "/artists/" + track2.artistId,
+        album: this.request.get('host') + "/albums/" + track2.albumId,
+        self: this.request.get('host') + "/tracks/" + track2.ID,
+
+      })
+    }
+    const album = await this.albumRepository.findById(id)
+    track.artistId = album.artistId
+    await this.albumRepository.tracks(id).create(track);
+    this.res.status(201)
+    return ({
+      id: track.ID,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      album_id: track.albumId,
+      name: track.name,
+      duration: track.duration,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      times_played: track.timesPlayed,
+      artist: this.request.get('host') + "/artists/" + track.artistId,
+      album: this.request.get('host') + "/albums/" + id,
+      self: this.request.get('host') + "/tracks/" + track.ID,
+
+    })
   }
+  // {
+  //   return this.albumRepository.tracks(id).create(track);
+  // }
 
   @patch('/albums/{id}/tracks', {
     responses: {

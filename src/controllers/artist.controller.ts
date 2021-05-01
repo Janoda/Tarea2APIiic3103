@@ -75,11 +75,15 @@ export class ArtistController {
 
   @post('/artists')
   @response(200, {
-    description: 'Artist model instance',
+    description: 'Artista creado',
+    content: {'application/json': {schema: getModelSchemaRef(Artist)}},
+  })
+  @response(400, {
+    description: 'Input invalido',
     content: {'application/json': {schema: getModelSchemaRef(Artist)}},
   })
   @response(409, {
-    description: 'Artist model instance',
+    description: 'Artista ya existe',
     content: {'application/json': {schema: getModelSchemaRef(Artist)}},
   })
   async create(

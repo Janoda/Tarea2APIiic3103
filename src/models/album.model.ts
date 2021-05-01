@@ -1,6 +1,6 @@
-import {Entity, model, property, hasMany, belongsTo} from '@loopback/repository';
-import {Track} from './track.model';
+import {belongsTo, Entity, hasMany, model, property} from '@loopback/repository';
 import {Artist} from './artist.model';
+import {Track} from './track.model';
 
 @model()
 export class Album extends Entity {
@@ -24,14 +24,7 @@ export class Album extends Entity {
   })
   genre: string;
 
-  @property({
-    type: 'string',
-  })
-  artist?: string;
-  @property({
-    type: 'string',
-  })
-  self?: string;
+
   @hasMany(() => Track)
   tracks: Track[];
 
