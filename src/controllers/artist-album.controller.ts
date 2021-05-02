@@ -11,6 +11,7 @@ import {
   get,
   getModelSchemaRef,
   getWhereSchemaFor,
+
   param,
   patch,
   post,
@@ -28,6 +29,9 @@ import {
 } from '../models';
 import {AlbumRepository, ArtistRepository} from '../repositories';
 
+
+type Albumreturn = {id: string, artist_id: string, name: string, genre: string, artist: string, tracks: string, self: string};
+
 export class ArtistAlbumController {
   constructor(
     @repository(ArtistRepository) protected artistRepository: ArtistRepository,
@@ -36,23 +40,37 @@ export class ArtistAlbumController {
     @inject(RestBindings.Http.REQUEST) public request: Request,
   ) { }
 
-  @get('/artists/{id}/albums', {
-    responses: {
-      '200': {
-        description: 'Array of Artist has many Album',
-        content: {
-          'application/json': {
-            schema: {type: 'array', items: getModelSchemaRef(Album)},
-          },
-        },
-      },
-    },
+  @get('/artists/{id}/albums')
+  @response(201, {
+    description: 'Album creado',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  @response(404, {
+    description: 'Artista Invalido',
   })
   async find(
     @param.path.string('id') id: string,
     @param.query.object('filter') filter?: Filter<Album>,
-  ): Promise<Album[]> {
-    return this.artistRepository.albums(id).find(filter);
+  ): Promise<Albumreturn[]> {
+    const ra: Albumreturn[] = [];
+    if (! await this.artistRepository.exists(id)) {
+      this.res.status(404)
+      //throw HttpErrors.404("error")
+      return [];
+    }
+    (await this.artistRepository.albums(id).find(filter)).forEach((el) => {
+      const a = {} as Albumreturn
+      a.id = el.ID
+      a.artist_id = el.artistId
+      a.name = el.name
+      a.genre = el.genre
+      a.artist = this.request.get('host') + "/artists/" + el.artistId
+      a.tracks = this.request.get('host') + "/albums/" + el.ID + "/tracks"
+      a.self = this.request.get('host') + "/albums/" + el.ID
+      ra.push(a);
+
+    });
+    return ra;
   }
 
   @post('/artists/{id}/albums')

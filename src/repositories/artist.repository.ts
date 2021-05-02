@@ -1,8 +1,9 @@
-import {inject, Getter} from '@loopback/core';
-import {DefaultCrudRepository, repository, HasManyRepositoryFactory} from '@loopback/repository';
+import {Getter, inject} from '@loopback/core';
+import {DefaultCrudRepository, HasManyRepositoryFactory, repository} from '@loopback/repository';
 import {DbDataSource} from '../datasources';
-import {Artist, ArtistRelations, Album} from '../models';
+import {Album, Artist, ArtistRelations, Track} from '../models';
 import {AlbumRepository} from './album.repository';
+import {TrackRepository} from './track.repository';
 
 export class ArtistRepository extends DefaultCrudRepository<
   Artist,
@@ -11,12 +12,15 @@ export class ArtistRepository extends DefaultCrudRepository<
 > {
 
   public readonly albums: HasManyRepositoryFactory<Album, typeof Artist.prototype.ID>;
+  public readonly tracks: HasManyRepositoryFactory<Track, typeof Album.prototype.ID>;
 
   constructor(
-    @inject('datasources.db') dataSource: DbDataSource, @repository.getter('AlbumRepository') protected albumRepositoryGetter: Getter<AlbumRepository>,
+    @inject('datasources.db') dataSource: DbDataSource, @repository.getter('AlbumRepository') protected albumRepositoryGetter: Getter<AlbumRepository>, @repository.getter('TrackRepository') protected trackRepositoryGetter: Getter<TrackRepository>,
   ) {
     super(Artist, dataSource);
     this.albums = this.createHasManyRepositoryFactoryFor('albums', albumRepositoryGetter,);
     this.registerInclusionResolver('albums', this.albums.inclusionResolver);
+    this.tracks = this.createHasManyRepositoryFactoryFor('tracks', trackRepositoryGetter,);
+    this.registerInclusionResolver('tracks', this.tracks.inclusionResolver);
   }
 }

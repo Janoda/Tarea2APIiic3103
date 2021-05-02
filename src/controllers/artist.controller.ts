@@ -3,7 +3,9 @@ import {
   Count,
   CountSchema,
   Filter,
+
   FilterExcludingWhere,
+
   repository,
   Where
 } from '@loopback/repository';
@@ -38,8 +40,10 @@ import {
   Response,
   RestBindings
 } from '@loopback/rest';
-import {Artist} from '../models';
+import {Artist, Track} from '../models';
 import {ArtistRepository} from '../repositories';
+type Artistreturn = {id: string, name: string, age: number, albums: string, tracks: string, self: string};
+type Trackreturn = {id: string, album_id: string, name: string, duration: number, artist: string, album: string, self: string};
 
 export class ArtistController {
   constructor(
@@ -71,6 +75,7 @@ export class ArtistController {
   //   artist.ID = Buffer.from(artist.name.substring(0, 22)).toString('base64')
   //   return this.artistRepository.create(artist);
   // }
+
 
 
   @post('/artists')
@@ -154,8 +159,21 @@ export class ArtistController {
   })
   async find(
     @param.filter(Artist) filter?: Filter<Artist>,
-  ): Promise<Artist[]> {
-    return this.artistRepository.find(filter);
+  ): Promise<Artistreturn[]> {
+    const ra: Artistreturn[] = [];
+
+    (await this.artistRepository.find(filter)).forEach((el) => {
+      const a = {} as Artistreturn;
+      a.id = el.ID
+      a.name = el.name
+      a.age = el.age
+      a.albums = this.request.get('host') + "/artists/" + el.ID + "/albums"
+      a.tracks = this.request.get('host') + "/artists/" + el.ID + "/tracks"
+      a.self = this.request.get('host') + "/artists/" + el.ID
+      ra.push(a);
+
+    });
+    return ra;
   }
 
   @patch('/artists')
@@ -189,8 +207,16 @@ export class ArtistController {
   async findById(
     @param.path.string('id') id: string,
     @param.filter(Artist, {exclude: 'where'}) filter?: FilterExcludingWhere<Artist>
-  ): Promise<Artist> {
-    return this.artistRepository.findById(id, filter);
+  ): Promise<Artistreturn> {
+    const re = {} as Artistreturn;
+    const a = await this.artistRepository.findById(id, filter)
+    re.id = a.ID
+    re.name = a.name
+    re.age = a.age
+    re.albums = this.request.get('host') + "/artists/" + a.ID + "/albums"
+    re.tracks = this.request.get('host') + "/artists/" + a.ID + "/tracks"
+    re.self = this.request.get('host') + "/artists/" + a.ID
+    return re;
   }
 
   @patch('/artists/{id}')
@@ -229,4 +255,39 @@ export class ArtistController {
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.artistRepository.deleteById(id);
   }
+
+  @get('/artists/{id}/tracks')
+  @response(200, {
+    description: 'Track get',
+    content: {'application/json': {schema: CountSchema}},
+  })
+  @response(404, {
+    description: 'Artista Invalido',
+  })
+  async find2(
+    @param.path.string('id') id: string,
+    @param.query.object('filter') filter?: Filter<Track>,
+  ): Promise<Trackreturn[]> {
+    const ra: Trackreturn[] = [];
+    if (! await this.artistRepository.exists(id)) {
+      this.res.status(404)
+      //throw HttpErrors.404("error")
+      return [];
+    }
+    (await this.artistRepository.tracks(id).find(filter)).forEach((el) => {
+      const a = {} as Trackreturn
+      a.id = el.ID
+      a.album_id = el.albumId
+      a.name = el.name
+      a.duration = el.duration
+      a.artist = this.request.get('host') + "/artists/" + el.artistId
+      a.album = this.request.get('host') + "/albums/" + el.albumId
+      a.self = this.request.get('host') + "/albums/" + el.ID
+      ra.push(a);
+
+    });
+    return ra;
+  }
+
+
 }
