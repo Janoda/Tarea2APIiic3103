@@ -30,6 +30,7 @@ import {
 import {AlbumRepository, ArtistRepository} from '../repositories';
 
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 type Albumreturn = {id: string, artist_id: string, name: string, genre: string, artist: string, tracks: string, self: string};
 
 export class ArtistAlbumController {

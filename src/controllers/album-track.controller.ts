@@ -27,6 +27,8 @@ import {
   Track
 } from '../models';
 import {AlbumRepository, TrackRepository} from '../repositories';
+// eslint-disable-next-line @typescript-eslint/naming-convention
+type Trackreturn = {id: string, album_id: string, name: string, duration: number, times_played: number, artist: string, album: string, self: string};
 
 export class AlbumTrackController {
   constructor(
@@ -51,8 +53,28 @@ export class AlbumTrackController {
   async find(
     @param.path.string('id') id: string,
     @param.query.object('filter') filter?: Filter<Track>,
-  ): Promise<Track[]> {
-    return this.albumRepository.tracks(id).find(filter);
+  ): Promise<Trackreturn[]> {
+    const ra: Trackreturn[] = [];
+    if (! await this.albumRepository.exists(id)) {
+      this.res.status(404)
+      //throw HttpErrors.404("error")
+      return [];
+    }
+    (await this.albumRepository.tracks(id).find(filter)).forEach((el) => {
+      const a = {} as Trackreturn
+      a.id = el.ID
+      a.album_id = el.albumId
+      a.name = el.name
+      a.duration = el.duration
+      a.times_played = el.timesPlayed
+      a.artist = this.request.get('host') + "/artists/" + el.artistId
+      a.album = this.request.get('host') + "/albums/" + el.albumId
+      a.self = this.request.get('host') + "/albums/" + el.ID
+      ra.push(a);
+
+    });
+    return ra;
+
   }
 
   @post('/albums/{id}/tracks')

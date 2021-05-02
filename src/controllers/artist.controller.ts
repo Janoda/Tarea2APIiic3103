@@ -13,6 +13,7 @@ import {
   del,
   get,
   getModelSchemaRef,
+
   param,
   patch,
   post,
@@ -41,13 +42,16 @@ import {
   RestBindings
 } from '@loopback/rest';
 import {Artist, Track} from '../models';
-import {ArtistRepository} from '../repositories';
+import {AlbumRepository, ArtistRepository, TrackRepository} from '../repositories';
 type Artistreturn = {id: string, name: string, age: number, albums: string, tracks: string, self: string};
+// eslint-disable-next-line @typescript-eslint/naming-convention
 type Trackreturn = {id: string, album_id: string, name: string, duration: number, artist: string, album: string, self: string};
 
 export class ArtistController {
   constructor(
     @repository(ArtistRepository) public artistRepository: ArtistRepository,
+    @repository(AlbumRepository) public albumRepository: AlbumRepository,
+    @repository(TrackRepository) public trackRepository: TrackRepository,
     @inject(RestBindings.Http.RESPONSE) public res: Response,
     @inject(RestBindings.Http.REQUEST) public request: Request,
 
@@ -79,7 +83,7 @@ export class ArtistController {
 
 
   @post('/artists')
-  @response(200, {
+  @response(201, {
     description: 'Artista creado',
     content: {'application/json': {schema: getModelSchemaRef(Artist)}},
   })
@@ -161,6 +165,7 @@ export class ArtistController {
     @param.filter(Artist) filter?: Filter<Artist>,
   ): Promise<Artistreturn[]> {
     const ra: Artistreturn[] = [];
+    console.log("get artists");
 
     (await this.artistRepository.find(filter)).forEach((el) => {
       const a = {} as Artistreturn;
@@ -204,12 +209,24 @@ export class ArtistController {
       },
     },
   })
+  @response(404, {
+    description: 'No encontrado album',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Artist, {includeRelations: true}),
+      },
+    },
+  })
   async findById(
     @param.path.string('id') id: string,
     @param.filter(Artist, {exclude: 'where'}) filter?: FilterExcludingWhere<Artist>
   ): Promise<Artistreturn> {
     const re = {} as Artistreturn;
     const a = await this.artistRepository.findById(id, filter)
+    if (!a) {
+      this.res.status(404)
+      return {} as Artistreturn
+    }
     re.id = a.ID
     re.name = a.name
     re.age = a.age
@@ -252,8 +269,20 @@ export class ArtistController {
   @response(204, {
     description: 'Artist DELETE success',
   })
-  async deleteById(@param.path.string('id') id: string): Promise<void> {
+  async deleteById(@param.path.string('id') id: string,
+  ): Promise<void> {
+    // console.log("11111")
+    // // if (!await this.artistRepository.exists(id)) {
+    // //   console.log("yesp")
+    // //   this.res.status(404)
+    // //   return
+    // // }
+    // console.log("NOOOO")
+    console.log("NO ENTRE NUCNA");
     await this.artistRepository.deleteById(id);
+    await this.artistRepository.tracks(id).delete();
+    await this.artistRepository.albums(id).delete();
+
   }
 
   @get('/artists/{id}/tracks')
@@ -287,6 +316,54 @@ export class ArtistController {
 
     });
     return ra;
+  }
+
+
+  @put('/artists/{id}/album/play')
+  @response(200, {
+    description: 'Artist model instance',
+
+  })
+  @response(404, {
+    description: 'No encontrado',
+
+  })
+  async playSongs(
+    @param.path.string('id') id: string,
+    //@param.filter(Artist, {exclude: 'where'}) filter?: FilterExcludingWhere<Artist>,
+    @param.query.object('filter') filter2?: Filter<Track>,
+  ): Promise<void> {
+    // const a = await this.artistRepository.findById(id, filter)
+    // if (!a) {
+    //   this.res.status(404)
+    //   return
+    // }
+    console.log("ASSDDDD");
+    // (await this.artistRepository.tracks(id).find(filter2)).forEach((el) => {
+    //   el.timesPlayed += 1
+    //   await this.trackRepository.updateById(el.ID, el)
+
+
+    // });
+    const a = await this.artistRepository.tracks(id).find(filter2);
+    // for (let index = 0; index < a.length; index++) {
+    //   const el = a[index];
+    //   el.timesPlayed++
+    //   //await this.trackRepository.updateById(el.ID, el)
+
+    // }
+
+    for (const el of a) {
+
+      el.timesPlayed++
+      await this.trackRepository.updateById(el.ID, el)
+
+    }
+
+    //return {};
+
+
+
   }
 
 

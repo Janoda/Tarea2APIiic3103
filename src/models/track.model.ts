@@ -30,7 +30,7 @@ export class Track extends Entity {
     type: 'number',
     default: 0,
   })
-  timesPlayed?: number;
+  timesPlayed: number;
 
 
 
