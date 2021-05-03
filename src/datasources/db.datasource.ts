@@ -5,7 +5,7 @@ const config = {
   name: 'db',
   connector: 'postgresql',
   url: process.env.DATABASE_URL,
-  ssl: true,
+  ssl: {rejectUnauthorized: false},
   host: 'localhost',
   port: 5432,
   user: 'postgres',
