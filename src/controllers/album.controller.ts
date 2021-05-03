@@ -198,8 +198,16 @@ export class AlbumController {
   async deleteById(@param.path.string('id') id: string,
     @param.query.object('where', getWhereSchemaFor(Track)) where?: Where<Track>,
   ): Promise<void> {
-    await this.albumRepository.deleteById(id);
-    await this.albumRepository.tracks(id).delete(where);
+
+    if (!await this.albumRepository.exists(id)) {
+      console.log("yesp")
+      this.res.status(404).send()
+
+    } else {
+      await this.albumRepository.deleteById(id);
+      await this.albumRepository.tracks(id).delete(where);
+    }
+
   }
 
 

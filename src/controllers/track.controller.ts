@@ -192,7 +192,14 @@ export class TrackController {
     description: 'Track DELETE success',
   })
   async deleteById(@param.path.string('id') id: string): Promise<void> {
-    await this.trackRepository.deleteById(id);
+    if (!await this.trackRepository.exists(id)) {
+      console.log("yesp")
+      this.res.status(404).send()
+
+    } else {
+      await this.trackRepository.deleteById(id);
+    }
+
   }
 
   @put('/tracks/{id}/play')

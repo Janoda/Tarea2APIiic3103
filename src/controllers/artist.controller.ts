@@ -264,6 +264,9 @@ export class ArtistController {
   @response(204, {
     description: 'Artist DELETE success',
   })
+  @response(404, {
+    description: 'Artist DELETE not found',
+  })
   async deleteById(@param.path.string('id') id: string,
   ): Promise<void> {
     // console.log("11111")
@@ -274,9 +277,16 @@ export class ArtistController {
     // // }
     // console.log("NOOOO")
     console.log("NO ENTRE NUCNA");
-    await this.artistRepository.deleteById(id);
-    await this.artistRepository.tracks(id).delete();
-    await this.artistRepository.albums(id).delete();
+    if (!await this.artistRepository.exists(id)) {
+      console.log("yesp")
+      this.res.status(404).send()
+
+    } else {
+      await this.artistRepository.deleteById(id);
+      await this.artistRepository.tracks(id).delete();
+      await this.artistRepository.albums(id).delete();
+    }
+
 
   }
 
