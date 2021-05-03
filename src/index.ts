@@ -1,5 +1,5 @@
 import {ApplicationConfig, T2Application} from './application';
-const fs = require('fs')
+//const fs = require('fs')
 
 export * from './application';
 
@@ -31,7 +31,7 @@ if (require.main === module) {
         // useful when used with OpenAPI-to-GraphQL to locate your application
         setServersFromRequest: true,
       },
-      protocol: 'https',
+
 
 
     },
