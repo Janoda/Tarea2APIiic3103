@@ -1,13 +1,14 @@
 import {BootMixin} from '@loopback/boot';
 import {ApplicationConfig} from '@loopback/core';
+import {RepositoryMixin} from '@loopback/repository';
+import {RestApplication, RestBindings} from '@loopback/rest';
 import {
   RestExplorerBindings,
-  RestExplorerComponent,
+  RestExplorerComponent
 } from '@loopback/rest-explorer';
-import {RepositoryMixin} from '@loopback/repository';
-import {RestApplication} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
+import {CustomRejectProvider} from './customreject';
 import {MySequence} from './sequence';
 
 export {ApplicationConfig};
@@ -19,7 +20,9 @@ export class T2Application extends BootMixin(
     super(options);
 
     // Set up the custom sequence
+
     this.sequence(MySequence);
+    this.bind(RestBindings.SequenceActions.REJECT).toProvider(CustomRejectProvider)
 
     // Set up default home page
     this.static('/', path.join(__dirname, '../public'));

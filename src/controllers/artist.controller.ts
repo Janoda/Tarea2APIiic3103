@@ -108,7 +108,7 @@ export class ArtistController {
     })
     artist: Artist,
   ): Promise<object> {
-    artist.ID = Buffer.from(artist.name.substring(0, 22)).toString('base64')
+    artist.ID = Buffer.from(artist.name).toString('base64').substring(0, 22)
 
     if (await this.artistRepository.exists(artist.ID)) {
       this.res.status(409);
@@ -124,7 +124,7 @@ export class ArtistController {
       };
     };
     await this.artistRepository.create(artist);
-
+    this.res.status(201);
     return {
       id: artist.ID,
       name: artist.name,

@@ -118,7 +118,7 @@ export class ArtistAlbumController {
       },
     }) album: Album,
   ): Promise<object> {
-    album.ID = Buffer.from(album.name.substring(0, 22)).toString('base64')
+    album.ID = Buffer.from(album.name).toString('base64').substring(0, 22)
     if (!await this.artistRepository.exists(id)) {
       console.log("ENTRE")
       this.res.status(422)

@@ -114,7 +114,7 @@ export class AlbumTrackController {
       },
     }) track: Track,
   ): Promise<object> {
-    track.ID = Buffer.from(track.name.substring(0, 22)).toString('base64')
+    track.ID = Buffer.from(track.name).toString('base64').substring(0, 22)
     if (!await this.albumRepository.exists(id)) {
       console.log("ENTRE")
       this.res.status(422)
