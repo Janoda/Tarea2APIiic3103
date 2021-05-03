@@ -20,6 +20,7 @@ export class CustomRejectProvider implements Provider<Reject> {
     // "response" is an Express Response object
     //console.log("test2");
     if (error) {
+      console.log("bbbbbbbbbbbbbbb")
       //console.log(error);
       error.message = 'Message: my error';
       error.name = 'Name: some error';

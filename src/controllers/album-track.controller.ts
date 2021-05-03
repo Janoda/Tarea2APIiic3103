@@ -54,27 +54,30 @@ export class AlbumTrackController {
   async find(
     @param.path.string('id') id: string,
     @param.query.object('filter') filter?: Filter<Track>,
-  ): Promise<Trackreturn[]> {
+  ): Promise<Trackreturn[] | void> {
     const ra: Trackreturn[] = [];
     if (! await this.albumRepository.exists(id)) {
-      this.res.status(404)
+      this.res.status(404).send()
       //throw HttpErrors.404("error")
-      return [];
-    }
-    (await this.albumRepository.tracks(id).find(filter)).forEach((el) => {
-      const a = {} as Trackreturn
-      a.id = el.ID
-      a.album_id = el.albumId
-      a.name = el.name
-      a.duration = el.duration
-      a.times_played = el.timesPlayed
-      a.artist = this.request.get('host') + "/artists/" + el.artistId
-      a.album = this.request.get('host') + "/albums/" + el.albumId
-      a.self = this.request.get('host') + "/albums/" + el.ID
-      ra.push(a);
+      return;
+    } else {
+      this.res.status(200);
+      (await this.albumRepository.tracks(id).find(filter)).forEach((el) => {
+        const a = {} as Trackreturn
+        a.id = el.ID
+        a.album_id = el.albumId
+        a.name = el.name
+        a.duration = el.duration
+        a.times_played = el.timesPlayed
+        a.artist = this.request.get('host') + "/artists/" + el.artistId
+        a.album = this.request.get('host') + "/albums/" + el.albumId
+        a.self = this.request.get('host') + "/albums/" + el.ID
+        ra.push(a);
 
-    });
-    return ra;
+      });
+      return ra;
+    }
+
 
   }
 

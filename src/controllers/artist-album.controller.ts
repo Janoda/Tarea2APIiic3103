@@ -60,26 +60,30 @@ export class ArtistAlbumController {
   async find(
     @param.path.string('id') id: string,
     @param.query.object('filter') filter?: Filter<Album>,
-  ): Promise<Albumreturn[]> {
+  ): Promise<Albumreturn[] | void> {
     const ra: Albumreturn[] = [];
     if (! await this.artistRepository.exists(id)) {
-      this.res.status(404)
+      this.res.status(404).send()
       //throw HttpErrors.404("error")
-      return [];
-    }
-    (await this.artistRepository.albums(id).find(filter)).forEach((el) => {
-      const a = {} as Albumreturn
-      a.id = el.ID
-      a.artist_id = el.artistId
-      a.name = el.name
-      a.genre = el.genre
-      a.artist = this.request.get('host') + "/artists/" + el.artistId
-      a.tracks = this.request.get('host') + "/albums/" + el.ID + "/tracks"
-      a.self = this.request.get('host') + "/albums/" + el.ID
-      ra.push(a);
+      return
+    } else {
 
-    });
-    return ra;
+      (await this.artistRepository.albums(id).find(filter)).forEach((el) => {
+        const a = {} as Albumreturn
+        a.id = el.ID
+        a.artist_id = el.artistId
+        a.name = el.name
+        a.genre = el.genre
+        a.artist = this.request.get('host') + "/artists/" + el.artistId
+        a.tracks = this.request.get('host') + "/albums/" + el.ID + "/tracks"
+        a.self = this.request.get('host') + "/albums/" + el.ID
+        ra.push(a);
+
+      });
+      this.res.status(200)
+      return ra;
+    }
+
   }
 
   @post('/artists/{id}/albums')

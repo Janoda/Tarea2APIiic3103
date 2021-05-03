@@ -139,23 +139,26 @@ export class TrackController {
   async findById(
     @param.path.string('id') id: string,
     @param.filter(Track, {exclude: 'where'}) filter?: FilterExcludingWhere<Track>
-  ): Promise<Trackreturn> {
+  ): Promise<Trackreturn | void> {
     const a = {} as Trackreturn
-    const el = await this.trackRepository.findById(id, filter);
-    if (!el) {
-      this.res.status(404)
-      return {} as Trackreturn
-    }
-    a.id = el.ID
-    a.album_id = el.albumId
-    a.name = el.name
-    a.duration = el.duration
-    a.times_played = el.timesPlayed
-    a.artist = this.request.get('host') + "/artists/" + el.artistId
-    a.album = this.request.get('host') + "/albums/" + el.albumId
-    a.self = this.request.get('host') + "/albums/" + el.ID
 
-    return a
+    if (await this.trackRepository.exists(id)) {
+      this.res.status(404).send()
+      return
+    } else {
+      const el = await this.trackRepository.findById(id, filter);
+      a.id = el.ID
+      a.album_id = el.albumId
+      a.name = el.name
+      a.duration = el.duration
+      a.times_played = el.timesPlayed
+      a.artist = this.request.get('host') + "/artists/" + el.artistId
+      a.album = this.request.get('host') + "/albums/" + el.albumId
+      a.self = this.request.get('host') + "/albums/" + el.ID
+
+      return a
+    }
+
   }
 
   @patch('/tracks/{id}')
@@ -213,8 +216,18 @@ export class TrackController {
     @param.path.string('id') id: string,
     @param.query.object('filter') filter2?: Filter<Track>,
   ): Promise<void> {
-    const track = await this.trackRepository.findById(id)
-    track.timesPlayed++
-    await this.trackRepository.replaceById(id, track);
+
+    if (!await this.trackRepository.exists(id)) {
+      console.log("yesp")
+      this.res.status(404).send()
+
+    } else {
+      this.res.status(200)
+      const track = await this.trackRepository.findById(id)
+      track.timesPlayed++
+      await this.trackRepository.replaceById(id, track);
+    }
+
+
   }
 }

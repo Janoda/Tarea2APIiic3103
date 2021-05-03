@@ -144,22 +144,29 @@ export class AlbumController {
   async findById(
     @param.path.string('id') id: string,
     @param.filter(Album, {exclude: 'where'}) filter?: FilterExcludingWhere<Album>
-  ): Promise<Albumreturn> {
+  ): Promise<Albumreturn | void> {
+    console.log("AAAAA")
     const a = {} as Albumreturn;
-    const el = await this.albumRepository.findById(id, filter);
-    if (!el) {
-      this.res.status(404)
-      return {} as Albumreturn
-    }
-    a.id = el.ID
-    a.artist_id = el.artistId
-    a.name = el.name
-    a.genre = el.genre
-    a.artist = this.request.get('host') + "/artists/" + el.artistId
-    a.tracks = this.request.get('host') + "/albums/" + el.ID + "/tracks"
-    a.self = this.request.get('host') + "/albums/" + el.ID
 
-    return a
+    if (!await this.albumRepository.exists(id)) {
+      console.log("ASDASDASDASDASD")
+      this.res.status(404).send()
+      return
+    } else {
+      const el = await this.albumRepository.findById(id, filter);
+      this.res.status(200)
+      a.id = el.ID
+      a.artist_id = el.artistId
+      a.name = el.name
+      a.genre = el.genre
+      a.artist = this.request.get('host') + "/artists/" + el.artistId
+      a.tracks = this.request.get('host') + "/albums/" + el.ID + "/tracks"
+      a.self = this.request.get('host') + "/albums/" + el.ID
+
+      return a
+
+    }
+
   }
 
   @patch('/albums/{id}')
@@ -237,20 +244,22 @@ export class AlbumController {
 
 
     // });
-    const a = await this.albumRepository.tracks(id).find(filter2);
-    // for (let index = 0; index < a.length; index++) {
-    //   const el = a[index];
-    //   el.timesPlayed++
-    //   //await this.trackRepository.updateById(el.ID, el)
 
-    // }
+    if (!await this.albumRepository.exists(id)) {
+      console.log("yesp")
+      this.res.status(404).send()
 
-    for (const el of a) {
+    } else {
+      this.res.status(200)
+      const a = await this.albumRepository.tracks(id).find(filter2);
+      for (const el of a) {
 
-      el.timesPlayed++
-      await this.trackRepository.updateById(el.ID, el)
+        el.timesPlayed++
+        await this.trackRepository.updateById(el.ID, el)
 
+      }
     }
+
 
     //return {};
 

@@ -215,20 +215,23 @@ export class ArtistController {
   async findById(
     @param.path.string('id') id: string,
     @param.filter(Artist, {exclude: 'where'}) filter?: FilterExcludingWhere<Artist>
-  ): Promise<Artistreturn> {
+  ): Promise<Artistreturn | void> {
     const re = {} as Artistreturn;
-    const a = await this.artistRepository.findById(id, filter)
-    if (!a) {
-      this.res.status(404)
-      return {} as Artistreturn
+
+    if (!await this.artistRepository.exists(id)) {
+      this.res.status(404).send()
+      return
+    } else {
+      const a = await this.artistRepository.findById(id, filter)
+      re.id = a.ID
+      re.name = a.name
+      re.age = a.age
+      re.albums = this.request.get('host') + "/artists/" + a.ID + "/albums"
+      re.tracks = this.request.get('host') + "/artists/" + a.ID + "/tracks"
+      re.self = this.request.get('host') + "/artists/" + a.ID
+      return re;
     }
-    re.id = a.ID
-    re.name = a.name
-    re.age = a.age
-    re.albums = this.request.get('host') + "/artists/" + a.ID + "/albums"
-    re.tracks = this.request.get('host') + "/artists/" + a.ID + "/tracks"
-    re.self = this.request.get('host') + "/artists/" + a.ID
-    return re;
+
   }
 
   @patch('/artists/{id}')
@@ -345,32 +348,24 @@ export class ArtistController {
     //@param.filter(Artist, {exclude: 'where'}) filter?: FilterExcludingWhere<Artist>,
     @param.query.object('filter') filter2?: Filter<Track>,
   ): Promise<void> {
-    // const a = await this.artistRepository.findById(id, filter)
-    // if (!a) {
-    //   this.res.status(404)
-    //   return
-    // }
-    console.log("ASSDDDD");
-    // (await this.artistRepository.tracks(id).find(filter2)).forEach((el) => {
-    //   el.timesPlayed += 1
-    //   await this.trackRepository.updateById(el.ID, el)
 
 
-    // });
-    const a = await this.artistRepository.tracks(id).find(filter2);
-    // for (let index = 0; index < a.length; index++) {
-    //   const el = a[index];
-    //   el.timesPlayed++
-    //   //await this.trackRepository.updateById(el.ID, el)
+    if (!await this.artistRepository.exists(id)) {
+      console.log("yesp")
+      this.res.status(404).send()
 
-    // }
+    } else {
+      this.res.status(200)
+      const a = await this.artistRepository.tracks(id).find(filter2);
 
-    for (const el of a) {
+      for (const el of a) {
 
-      el.timesPlayed++
-      await this.trackRepository.updateById(el.ID, el)
+        el.timesPlayed++
+        await this.trackRepository.updateById(el.ID, el)
 
+      }
     }
+
 
     //return {};
 
