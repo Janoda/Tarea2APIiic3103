@@ -28,7 +28,7 @@ import {
   Track
 } from '../models';
 import {AlbumRepository, TrackRepository} from '../repositories';
-// eslint-disable-next-line @typescript-eslint/naming-convention
+
 type Trackreturn = {id: string, album_id: string, name: string, duration: number, times_played: number, artist: string, album: string, self: string};
 
 export class AlbumTrackController {
@@ -146,12 +146,16 @@ export class AlbumTrackController {
     track.artistId = album.artistId
     await this.albumRepository.tracks(id).create(track);
     this.res.status(201)
+    console.log("POQRRR")
+    console.log(track.timesPlayed)
+    track.timesPlayed = 0
     return ({
       id: track.ID,
       album_id: track.albumId,
       name: track.name,
       duration: track.duration,
       times_played: track.timesPlayed,
+      //times_played: track.timesPlayed,
       artist: this.request.get('host') + "/artists/" + track.artistId,
       album: this.request.get('host') + "/albums/" + id,
       self: this.request.get('host') + "/tracks/" + track.ID,

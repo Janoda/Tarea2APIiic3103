@@ -250,7 +250,7 @@ export class AlbumController {
       this.res.status(404).send()
 
     } else {
-      this.res.status(200)
+      //this.res.status(200).send()
       const a = await this.albumRepository.tracks(id).find(filter2);
       for (const el of a) {
 
@@ -258,6 +258,7 @@ export class AlbumController {
         await this.trackRepository.updateById(el.ID, el)
 
       }
+      this.res.status(200).send()
     }
 
 
