@@ -9,7 +9,7 @@ export class CustomRejectProvider implements Provider<Reject> {
 
   value() {
     // Use the lambda syntax to preserve the "this" scope for future calls!
-    console.log("test1");
+    //console.log("test1");
     return (response: HandlerContext, result: Error) => {
       this.action(response, result);
     };
@@ -18,9 +18,9 @@ export class CustomRejectProvider implements Provider<Reject> {
   action({request, response}: HandlerContext, error: Error) {
     // handle the error and send back the error response
     // "response" is an Express Response object
-    console.log("test2");
+    //console.log("test2");
     if (error) {
-      console.log(error);
+      //console.log(error);
       error.message = 'Message: my error';
       error.name = 'Name: some error';
       //const headers = (request.headers as any) || {};
@@ -29,7 +29,7 @@ export class CustomRejectProvider implements Provider<Reject> {
       response.status(400).send(null);
 
     } else {
-      console.log("test4");
+      //console.log("test4");
       response.end(response);
     }
   }

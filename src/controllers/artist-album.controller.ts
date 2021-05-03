@@ -118,9 +118,13 @@ export class ArtistAlbumController {
       },
     }) album: Album,
   ): Promise<object> {
-    album.ID = Buffer.from(album.name).toString('base64').substring(0, 22)
+    album.ID = Buffer.from(album.name + ":" + id).toString('base64').substring(0, 22)
+    //album.ID = (album.name+":"+id).substring(0,22)
+    //album.ID = Buffer.from(album.name).toString('base64').substring(0, 22)
+
+
     if (!await this.artistRepository.exists(id)) {
-      console.log("ENTRE")
+      //console.log("ENTRE")
       this.res.status(422)
       return {error: "Artista no existe"}
     }

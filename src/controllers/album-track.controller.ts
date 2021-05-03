@@ -114,9 +114,11 @@ export class AlbumTrackController {
       },
     }) track: Track,
   ): Promise<object> {
-    track.ID = Buffer.from(track.name).toString('base64').substring(0, 22)
+    track.ID = Buffer.from(track.name + ":" + id).toString('base64').substring(0, 22)
+    //track.ID = Buffer.from(track.name).toString('base64').substring(0, 22)
+
     if (!await this.albumRepository.exists(id)) {
-      console.log("ENTRE")
+      //console.log("ENTRE-------")
       this.res.status(422)
       return {error: "Album no existe"}
     }
