@@ -32,8 +32,7 @@ if (require.main === module) {
         setServersFromRequest: true,
       },
       protocol: 'https',
-      key: fs.readFileSync('./key.pem'),
-      cert: fs.readFileSync('./cert.pem'),
+
 
     },
   };
