@@ -42,9 +42,16 @@ export class ArtistAlbumController {
   ) { }
 
   @get('/artists/{id}/albums')
-  @response(201, {
-    description: 'Album creado',
-    content: {'application/json': {schema: CountSchema}},
+  @response(200, {
+    description: 'resultados obtenidos',
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Album, {includeRelations: true}),
+        },
+      },
+    },
   })
   @response(404, {
     description: 'Artista Invalido',
@@ -77,14 +84,22 @@ export class ArtistAlbumController {
   @post('/artists/{id}/albums')
   @response(201, {
     description: 'Album creado',
-    content: {'application/json': {schema: CountSchema}},
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Album, {includeRelations: true}),
+      },
+    },
   })
   @response(400, {
     description: 'Input Invalido',
   })
   @response(409, {
     description: 'Album ya existe',
-    content: {'application/json': {schema: CountSchema}},
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Album, {includeRelations: true}),
+      },
+    },
   })
   @response(422, {
     description: 'Artista no existe',

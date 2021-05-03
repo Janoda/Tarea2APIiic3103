@@ -140,11 +140,6 @@ export class AlbumController {
   })
   @response(404, {
     description: 'No encontrado album',
-    content: {
-      'application/json': {
-        schema: getModelSchemaRef(Album, {includeRelations: true}),
-      },
-    },
   })
   async findById(
     @param.path.string('id') id: string,

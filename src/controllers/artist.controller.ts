@@ -89,7 +89,6 @@ export class ArtistController {
   })
   @response(400, {
     description: 'Input invalido',
-    content: {'application/json': {schema: getModelSchemaRef(Artist)}},
   })
   @response(409, {
     description: 'Artista ya existe',
@@ -210,12 +209,8 @@ export class ArtistController {
     },
   })
   @response(404, {
-    description: 'No encontrado album',
-    content: {
-      'application/json': {
-        schema: getModelSchemaRef(Artist, {includeRelations: true}),
-      },
-    },
+    description: 'No encontrado artista',
+
   })
   async findById(
     @param.path.string('id') id: string,
@@ -288,7 +283,14 @@ export class ArtistController {
   @get('/artists/{id}/tracks')
   @response(200, {
     description: 'Track get',
-    content: {'application/json': {schema: CountSchema}},
+    content: {
+      'application/json': {
+        schema: {
+          type: 'array',
+          items: getModelSchemaRef(Track, {includeRelations: true}),
+        },
+      },
+    },
   })
   @response(404, {
     description: 'Artista Invalido',
@@ -319,7 +321,7 @@ export class ArtistController {
   }
 
 
-  @put('/artists/{id}/album/play')
+  @put('/artists/{id}/albums/play')
   @response(200, {
     description: 'Artist model instance',
 

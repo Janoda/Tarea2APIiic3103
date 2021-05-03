@@ -196,8 +196,11 @@ export class TrackController {
   }
 
   @put('/tracks/{id}/play')
-  @response(204, {
+  @response(200, {
     description: 'Track PUT success',
+  })
+  @response(404, {
+    description: 'Not found',
   })
   async playSong(
     @param.path.string('id') id: string,

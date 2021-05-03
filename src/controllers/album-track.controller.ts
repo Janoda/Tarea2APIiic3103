@@ -80,14 +80,22 @@ export class AlbumTrackController {
   @post('/albums/{id}/tracks')
   @response(201, {
     description: 'Track creado',
-    content: {'application/json': {schema: CountSchema}},
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Track, {includeRelations: true}),
+      },
+    },
   })
   @response(400, {
     description: 'Input Invalido',
   })
   @response(409, {
     description: 'Track ya existe',
-    content: {'application/json': {schema: CountSchema}},
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Track, {includeRelations: true}),
+      },
+    },
   })
   @response(422, {
     description: 'Album no existe',
