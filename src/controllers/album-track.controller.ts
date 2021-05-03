@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import {inject} from '@loopback/context';
 import {
   Count,
@@ -128,11 +129,9 @@ export class AlbumTrackController {
       this.res.status(409)
       return ({
         id: track2.ID,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         album_id: track2.albumId,
         name: track2.name,
         duration: track2.duration,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         times_played: track2.timesPlayed,
         artist: this.request.get('host') + "/artists/" + track2.artistId,
         album: this.request.get('host') + "/albums/" + track2.albumId,
@@ -146,11 +145,9 @@ export class AlbumTrackController {
     this.res.status(201)
     return ({
       id: track.ID,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       album_id: track.albumId,
       name: track.name,
       duration: track.duration,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       times_played: track.timesPlayed,
       artist: this.request.get('host') + "/artists/" + track.artistId,
       album: this.request.get('host') + "/albums/" + id,

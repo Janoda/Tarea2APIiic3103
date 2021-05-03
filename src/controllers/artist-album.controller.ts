@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import {inject} from '@loopback/context';
 import {
   Count,
@@ -133,7 +134,6 @@ export class ArtistAlbumController {
       this.res.status(409)
       return ({
         id: album2.ID,
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         artist_id: album2.artistId,
         name: album2.name,
         genre: album2.genre,
@@ -147,7 +147,6 @@ export class ArtistAlbumController {
     this.res.status(201)
     return ({
       id: album.ID,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       artist_id: album.artistId,
       name: album.name,
       genre: album.genre,
