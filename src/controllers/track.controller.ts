@@ -142,7 +142,7 @@ export class TrackController {
   ): Promise<Trackreturn | void> {
     const a = {} as Trackreturn
 
-    if (await this.trackRepository.exists(id)) {
+    if (!await this.trackRepository.exists(id)) {
       this.res.status(404).send()
       return
     } else {
@@ -216,16 +216,16 @@ export class TrackController {
     @param.path.string('id') id: string,
     @param.query.object('filter') filter2?: Filter<Track>,
   ): Promise<void> {
-
+    console.log("PQ NO AAAAAAAAAAAAAaa")
     if (!await this.trackRepository.exists(id)) {
       console.log("yesp")
       this.res.status(404).send()
 
     } else {
-      this.res.status(200)
       const track = await this.trackRepository.findById(id)
       track.timesPlayed++
       await this.trackRepository.replaceById(id, track);
+      this.res.status(200).send()
     }
 
 
