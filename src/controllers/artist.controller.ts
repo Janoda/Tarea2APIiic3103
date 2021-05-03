@@ -45,7 +45,8 @@ import {Artist, Track} from '../models';
 import {AlbumRepository, ArtistRepository, TrackRepository} from '../repositories';
 type Artistreturn = {id: string, name: string, age: number, albums: string, tracks: string, self: string};
 // eslint-disable-next-line @typescript-eslint/naming-convention
-type Trackreturn = {id: string, album_id: string, name: string, duration: number, artist: string, album: string, self: string};
+type Trackreturn = {id: string, album_id: string, name: string, duration: number, times_played: number, artist: string, album: string, self: string};
+
 
 export class ArtistController {
   constructor(
@@ -325,6 +326,7 @@ export class ArtistController {
         a.album_id = el.albumId
         a.name = el.name
         a.duration = el.duration
+        a.times_played = el.timesPlayed
         a.artist = this.request.get('host') + "/artists/" + el.artistId
         a.album = this.request.get('host') + "/albums/" + el.albumId
         a.self = this.request.get('host') + "/albums/" + el.ID
